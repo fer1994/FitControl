@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  password       String
+  role           Role      @default(CLIENT)
+  clients        Client[]
+  payments       Payment[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  payments  Payment[]
+  turns     Turn[]
+  plans     Plan[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  amount    Float
+  date      DateTime
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Turn {
+  id        String   @id @default(cuid())
+  date      DateTime
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  duration    Int
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Class {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  instructor  String
+  schedule    DateTime
+  turns       Turn[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Routine {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  exercises   Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  TRAINER
+  CLIENT
+}
+
